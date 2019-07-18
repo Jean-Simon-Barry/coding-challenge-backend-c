@@ -1,13 +1,14 @@
-var mongoose = require('mongoose');
-var locationObject = require('./location-schema');
+const mongoose = require('mongoose');
+const locationObject = require('./location-schema');
 
+let redisClient;
 //Redis to go for heroku
 if (process.env.REDISTOGO_URL) {
-    var rtg = require("url").parse(process.env.REDISTOGO_URL);
-    var redisClient = require("redis").createClient(rtg.port, rtg.hostname);
+    const rtg = require("url").parse(process.env.REDISTOGO_URL);
+    redisClient = require("redis").createClient(rtg.port, rtg.hostname);
     redisClient.auth(rtg.auth.split(":")[1]);
 } else {
-    var redisClient = require("redis").createClient();
+    redisClient = require("redis").createClient();
 }
 
 mongoose.connect('mongodb://localhost/location-db', function (err) {
@@ -20,7 +21,7 @@ mongoose.connect('mongodb://localhost/location-db', function (err) {
 
 
 function createRegex(cityName) {
-    var regex = "";
+    let regex = "";
     //too convoluted for what I wanted to do. With more time maybe allowing for mistakes/mispelling could
     //be handled more gracefully.
     /*for (var i = 1, len = cityName.length; i < len; i++) {
@@ -35,11 +36,11 @@ function createRegex(cityName) {
 }
 
 function constructParams(queryString, params) {
-    var aggregates = [];
+    const aggregates = [];
     //geoNear aggregate will sort the cities by proximity to the input (longitude,latitude) coordinates
     //makes use of the mongodb 2dsphere index for quick results over large data sets
     //keep only cities populated > 5000
-    var geoNear = {
+    const geoNear = {
         $geoNear: {
             near: {type: "Point", coordinates: [parseFloat(queryString.longitude), parseFloat(queryString.latitude)]},
             distanceField: "dist.calculated",
@@ -50,17 +51,17 @@ function constructParams(queryString, params) {
     };
     //match the query name against the generated regex. Regex deals only in ASCII.
     //TODO: have language option?
-    var matchName = {
+    const matchName = {
         $match: {
             ascii: {$regex: "filler", $options: 'i'},
             population: {$gt: 5000},
         }
     };
-    var limit = {
+    const limit = {
         $limit: 20
     };
     //project only the needed fields to the next aggregate stage
-    var project = {
+    const project = {
         $project: {
             "name": {$concat: ["$ascii", ", ", {$substr: ["$admin1", 0, 2]}, ", ", "$country"]},
             "loc": 1,
@@ -72,18 +73,18 @@ function constructParams(queryString, params) {
     };
     //push the geoNear stage if the user put in longitude/latitude.
     //limit results if no name was entered to 10 closest cities.
-    if (queryString.longitude != undefined && queryString.latitude != undefined) {
-        if (queryString.q == undefined)
+    if (queryString.longitude !== undefined && queryString.latitude !== undefined) {
+        if (queryString.q === undefined)
             geoNear.$geoNear.limit = 10;
         aggregates.push(geoNear);
     }
 
     //generate the prefix regex match. Prefix makes use of the mongo db index.
-    if (queryString.q != undefined) {
+    if (queryString.q !== undefined) {
         matchName.$match.ascii.$regex = createRegex(queryString.q);
         aggregates.push(matchName);
     }
-    if (queryString.limit != undefined)
+    if (queryString.limit !== undefined)
         limit.$limit = parseInt(queryString.limit);
 
     aggregates.push(limit, project);
@@ -95,11 +96,11 @@ function constructParams(queryString, params) {
 //for the namescore, since I'm not implementing any spelling error and we're matching on the prefix
 //all results returned will have high confidence
 function computeScore(queryString, locationName, distance) {
-    var nameScore = 1;
-    var geoScore = 1;
-    var totalScore = 0;
+    let nameScore = 1;
+    let geoScore = 1;
+    let totalScore = 0;
     if (queryString.q != null) {
-        var common = locationName.replace(queryString.q, "");
+        const common = locationName.replace(queryString.q, "");
         if (common.length == 0)
             nameScore = 1;
         else
@@ -118,7 +119,7 @@ function computeScore(queryString, locationName, distance) {
 //first check redis in memory for the queried term. If there is no result, we go to mongo.
 //ideally, redis would sit on a server different than mongo since they have conflicting approaches for using 
 //memory. (mongo scales well with OS memory-swapping but redis does not)
-var locations = {
+const locations = {
     search: function (queryString, callback) {
         //query redis first
         redisClient.get("query_" + JSON.stringify(queryString), function (err, redisResults) {
@@ -130,7 +131,7 @@ var locations = {
                     } else {
                         //compute score. It would have been nice to do this in the aggregate stage but mongo
                         //doesn't deal well with string operations inside aggregate.
-                        var filteredLocs = [];
+                        const filteredLocs = [];
                         locs.forEach(function (doc) {
                             doc.score = computeScore(queryString, doc.ascii, doc.dist);
                             if (doc.score > 0) {
