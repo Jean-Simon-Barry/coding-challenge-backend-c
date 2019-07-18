@@ -1,13 +1,13 @@
-var http = require('http');
-var port = process.env.PORT || 2345;
-var url = require('url');
-var locations = require('./locations/locations.js');
+const http = require('http');
+const port = process.env.PORT || 2345;
+const url = require('url');
+const locations = require('./locations/locations.js');
 
 module.exports = http.createServer(function (req, res) {
 
     //use express routes here instead?
     if (req.url.indexOf('/suggestions') === 0) {
-        var queryString = url.parse(req.url, true).query;
+        const queryString = url.parse(req.url, true).query;
 
         if (queryString.q != undefined && queryString.q == "") {
             res.statusCode = '400'; //bad request
