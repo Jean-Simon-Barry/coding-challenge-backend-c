@@ -1,12 +1,15 @@
-var expect  = require('chai').expect;
-var app     = require('../app');
-var request = require('supertest')(app);
+const chai = require('chai');
+const app = require('../app');
+const request = require('supertest')(app);
+const mocha = require('mocha');
+let expect = chai.expect
+let describe = mocha.describe;
 
 describe('GET /suggestions', function() {
   describe('with a non-existent city', function () {
-    var response;
+	  let response;
 
-    before(function (done) {
+	  before(function (done) {
       request
         .get('/suggestions?q=SomeRandomCityInTheMiddleOfNowhere')
         .end(function (err, res) {
@@ -27,8 +30,8 @@ describe('GET /suggestions', function() {
   });
 
   describe('with a valid city', function () {
-    var response;
-    before(function (done) {
+	  let response;
+	  before(function (done) {
       request
         .get('/suggestions?q=Montreal')
         .end(function (err, res) {
@@ -49,9 +52,9 @@ describe('GET /suggestions', function() {
 
     it('contains a match', function () {
       expect(response.json.suggestions).to.satisfy(function (suggestions) {
-        return suggestions.some(function (suggestion) {	    
-	    var regex = /montreal/i;
-          return regex.test(suggestion.name);
+        return suggestions.some(function (suggestion) {
+			const regex = /montreal/i;
+			return regex.test(suggestion.name);
         });
       })
     });
@@ -74,8 +77,8 @@ describe('GET /suggestions', function() {
   });
 
     describe('Limit to 20 by default with a lot of matches', function () {
-	var response;
-	before(function (done) {
+		let response;
+		before(function (done) {
 	    request
 		.get('/suggestions?q=P')
 		.end(function (err, res) {
@@ -93,8 +96,8 @@ describe('GET /suggestions', function() {
     });
 
      describe('Limit to the number requested in queryString', function () {
-	var response;
-	before(function (done) {
+		 let response;
+		 before(function (done) {
 	    request
 		.get('/suggestions?q=P&limit=25')
 		.end(function (err, res) {
@@ -112,8 +115,8 @@ describe('GET /suggestions', function() {
     });
 
      describe('with valid coordinates only', function () {
-	var response;
-	before(function (done) {
+		 let response;
+		 before(function (done) {
 	    request
 		.get('/suggestions?longitude=-114.35255&latitude=62.456')
 		.end(function (err, res) {
@@ -126,8 +129,8 @@ describe('GET /suggestions', function() {
 	 it('contains a match (Yellowknife)', function () {
 	     expect(response.json.suggestions).to.satisfy(function (suggestions) {
 		 return suggestions.some(function (suggestion) {
-		     var regex = /yellowknife/i;
-		     return regex.test(suggestion.name);
+			 const regex = /yellowknife/i;
+			 return regex.test(suggestion.name);
 		 });
 	     })
 	 });
@@ -135,8 +138,8 @@ describe('GET /suggestions', function() {
     });
 
     describe('with valid coordinates and valid partial name', function () {
-	var response;
-	before(function (done) {
+		let response;
+		before(function (done) {
 	    request
 		.get('/suggestions?q=Yello&longitude=-114.35255&latitude=62.456')
 		.end(function (err, res) {
@@ -149,8 +152,8 @@ describe('GET /suggestions', function() {
 	 it('contains a match (Yellowknife)', function () {
 	     expect(response.json.suggestions).to.satisfy(function (suggestions) {
 		 return suggestions.some(function (suggestion) {
-		     var regex = /yellowknife/i;
-		     return regex.test(suggestion.name);
+			 const regex = /yellowknife/i;
+			 return regex.test(suggestion.name);
 		 });
 	     })
 	 });
@@ -158,9 +161,9 @@ describe('GET /suggestions', function() {
     });
     
     describe('with a empty query name parameter', function () {
-	var response;
+		let response;
 
-	before(function (done) {
+		before(function (done) {
 	    request
 		.get('/suggestions?q=')
 		.end(function (err, res) {

@@ -1,24 +1,24 @@
-var mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
-var locationSchema = new mongoose.Schema({
+const locationSchema = new mongoose.Schema({
     id: Number,
     name: String,
-    ascii: String,	
+    ascii: String,
     alt_name: String,
-    loc: {String : String, String : [Number, Number]},
-    feat_class: String,	
+    loc: {String: String, String: [Number, Number]},
+    feat_class: String,
     feat_code: String,
-    country: String,	
+    country: String,
     cc2: String,
-    admin1: String,	
-    admin2: String,	
-    admin3: String,	
-    admin4: String,	
-    population:	Number,
-    elevation:	Number,
-    dem: Number,	
-    tz:	String,
-    modified_at: Date 
+    admin1: String,
+    admin2: String,
+    admin3: String,
+    admin4: String,
+    population: Number,
+    elevation: Number,
+    dem: Number,
+    tz: String,
+    modified_at: Date
 });
 /*
   Model name, scheme for instantiating documents, and the collection it belongs to
